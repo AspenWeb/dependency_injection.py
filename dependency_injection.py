@@ -1,4 +1,4 @@
-"""This is a dependency injection library for Python.
+"""This Python library defines two dependency injection helpers.
 
 Installation
 ------------
@@ -40,12 +40,16 @@ else:
 
 
 def parse_signature(function):
-    """Given a function, return a three-tuple representing the function signature.
+    """Given a function object, return a three-tuple representing the function signature.
 
     :param function: a function object (not just a function name)
-    :returns: a three-tuple: first, a tuple of all parameters in order; second,
-        a tuple of required parameters in order; third, and a dict of optional
-        parameters mapped to their defaults
+    :returns: a three-:py:class:`tuple`
+
+    This function returns a tuple with these items:
+
+     0. a :py:class:`tuple` of all parameters, in the order they were defined
+     1. a :py:class:`tuple` of required parameters, in the order they were defined
+     2. a :py:class:`dict` of optional parameters mapped to their defaults
 
     For example, if you have this function:
 
@@ -78,7 +82,11 @@ def parse_signature(function):
 def resolve_dependencies(function, available):
     """Given a function and a dict of available deps, return a deps object.
 
-    The deps object is a namedtuple with these attributes:
+    :param function: a function object (not just a function name)
+    :param available: a :py:class:`dict` that
+    :returns: a :py:class:`namedtuple`, described below
+
+    The return value of this function is a :py:class:`namedtuple` with these attributes:
 
         a - a tuple of argument values
         kw - a dictionary of keyword arguments
