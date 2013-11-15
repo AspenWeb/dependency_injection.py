@@ -1,1 +1,1 @@
-http://dependency-injection-py.rtfd.org/
+http://dependency-injection-py.readthedocs.org/
