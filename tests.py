@@ -1,38 +1,38 @@
-from dependency_injection import parse_signature, resolve_dependencies
+from dependency_injection import get_signature, resolve_dependencies
 
 
-# parse_signature
+# get_signature
 # ===============
 
-def test_parse_signature_infers_defaults():
+def test_get_signature_infers_defaults():
     def func(foo='bar'): pass
-    names, required, optional = parse_signature(func)
-    assert names == ('foo',)
-    assert required == tuple()
-    assert optional == {'foo': 'bar'}
+    signature = get_signature(func)
+    assert signature.parameters ==('foo',)
+    assert signature.required == tuple()
+    assert signature.optional == {'foo': 'bar'}
 
-def test_parse_signature_returns_empty_dict_for_no_defaults():
+def test_get_signature_returns_empty_dict_for_no_defaults():
     def func(foo, bar, baz): pass
-    names, required, optional = parse_signature(func)
-    assert names == ('foo', 'bar', 'baz')
-    assert required == ('foo', 'bar', 'baz')
-    assert optional == {}
+    signature = get_signature(func)
+    assert signature.parameters ==('foo', 'bar', 'baz')
+    assert signature.required == ('foo', 'bar', 'baz')
+    assert signature.optional == {}
 
-def test_parse_signature_works_with_mixed_arg_kwarg():
+def test_get_signature_works_with_mixed_arg_kwarg():
     def func(foo, bar, baz='buz'): pass
-    names, required, optional = parse_signature(func)
-    assert names == ('foo', 'bar', 'baz')
-    assert required == ('foo', 'bar')
-    assert optional == {'baz': 'buz'}
+    signature = get_signature(func)
+    assert signature.parameters ==('foo', 'bar', 'baz')
+    assert signature.required == ('foo', 'bar')
+    assert signature.optional == {'baz': 'buz'}
 
-def test_parse_signature_doesnt_conflate_objects_defined_inside():
+def test_get_signature_doesnt_conflate_objects_defined_inside():
     def func(foo, bar, baz=2):
         blah = foo * 42
         return blah
-    names, required, optional = parse_signature(func)
-    assert names == ('foo', 'bar', 'baz')
-    assert required == ('foo', 'bar')
-    assert optional == {'baz': 2}
+    signature = get_signature(func)
+    assert signature.parameters ==('foo', 'bar', 'baz')
+    assert signature.required == ('foo', 'bar')
+    assert signature.optional == {'baz': 2}
 
 
 # resolve_dependencies
@@ -41,9 +41,9 @@ def test_parse_signature_doesnt_conflate_objects_defined_inside():
 def test_resolve_dependencies_resolves_dependencies():
     def func(foo): pass
     deps = resolve_dependencies(func, {'foo': 1})
-    assert deps.names == ('foo',)
-    assert deps.required == ('foo',)
-    assert deps.optional == {}
+    assert deps.signature.parameters ==('foo',)
+    assert deps.signature.required == ('foo',)
+    assert deps.signature.optional == {}
     assert deps.a == (1,)
     assert deps.kw == {'foo': 1}
 

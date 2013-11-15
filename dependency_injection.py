@@ -1,4 +1,6 @@
-"""This Python library defines two dependency injection helpers.
+"""This Python library defines helpers for building a dependency injection
+framework.
+
 
 Installation
 ------------
@@ -18,8 +20,29 @@ Python 2.6, 2.7, 3.2, and 3.3.
 .. _public domain: http://creativecommons.org/publicdomain/zero/1.0/
 
 
-API
----
+What is Dependency Injection?
+-----------------------------
+
+When you define a function you specify its *parameters*, and when you call the
+function you pass in *arguments* for those parameters. `Dependency injection`_
+means dynamically passing arguments to a function based on the parameters it
+defines.  So if you define a function:
+
+    >>> def foo(bar, baz):
+    ...     pass
+
+
+Then you are advertising to a dependency injection framework that your function
+wants to have ``bar`` and ``baz`` objects passed into it. What ``bar`` and
+``baz`` resolve to depends on the dependency injection framework. This library
+provides two helpers for building your own dependency injection framework. It
+doesn't provide such a framework itself.
+
+.. _Dependency injection: http://en.wikipedia.org/wiki/Dependency_injection
+
+
+Library API
+-----------
 
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -39,17 +62,55 @@ else:
     _get_defaults = lambda f: f.func_defaults
 
 
-def parse_signature(function):
-    """Given a function object, return a three-tuple representing the function signature.
+def resolve_dependencies(function, available):
+    """Given a function object and a :py:class:`dict` of available dependencies, return a
+        :py:class:`namedtuple` that has arguments to suit the function's parameters.
+
+    :param function: a function object (not just a function name)
+    :param available: a :py:class:`dict` mapping arbitrary names to objects
+    :returns: a :py:class:`namedtuple`, the arguments to use in calling the function
+
+    The return value of this function is a :py:class:`namedtuple` with these
+    attributes:
+
+    0. ``a`` - a tuple of argument values
+    1. ``kw`` - a dictionary of keyword arguments
+    2. ``signature`` - a :py:class:`namedtuple` as returned by :py:func:`get_signature`
+
+    The ``a`` and ``kw`` arguments are functionally equivalent. You could call
+    the function using either one and you'd get the same result.
+
+    """
+    dependencies = namedtuple('Dependencies', 'a kw signature')
+    dependencies.a = tuple()
+    dependencies.kw = {}
+    dependencies.signature = get_signature(function)
+
+    missing = object()
+    for name in dependencies.signature.parameters:
+        value = missing  # don't use .get, to avoid bugs around None
+        if name in available:
+            value = available[name]
+        elif name in dependencies.signature.optional:
+            value = dependencies.signature.optional[name]
+        if value is not missing:
+            dependencies.a += (value,)
+            dependencies.kw[name] = value
+    return dependencies
+
+
+def get_signature(function):
+    """Given a function object, return a :py:class:`namedtuple` representing the function
+        signature.
 
     :param function: a function object (not just a function name)
     :returns: a three-:py:class:`tuple`
 
-    This function returns a tuple with these items:
+    This function returns a :py:class:`namedtuple` with these items:
 
-     0. a :py:class:`tuple` of all parameters, in the order they were defined
-     1. a :py:class:`tuple` of required parameters, in the order they were defined
-     2. a :py:class:`dict` of optional parameters mapped to their defaults
+    0. ``parameters`` - a :py:class:`tuple` of all parameters, in the order they were defined
+    1. ``required`` - a :py:class:`tuple` of required parameters, in the order they were defined
+    2. ``optional`` - a :py:class:`dict` of optional parameters mapped to their defaults
 
     For example, if you have this function:
 
@@ -57,61 +118,31 @@ def parse_signature(function):
     ...     pass
     ...
 
-    Then :py:func:`~dependency_injection.parse_signature` will return:
+    Then :py:func:`~dependency_injection.get_signature` will return:
 
-    >>> parse_signature(foo)
+    >>> get_signature(foo)
     (('bar', 'baz'), ('bar',), {'baz': 1})
 
     """
-    code = _get_code(function)
-    varnames = code.co_varnames[:code.co_argcount]
+    out = namedtuple('Signature', 'parameters required optional')
 
-    nrequired = len(varnames)
+    # parameters
+    code = _get_code(function)
+    out.parameters = code.co_varnames[:code.co_argcount]
+
+    # optional
+    nrequired = len(out.parameters)
     values = _get_defaults(function)
-    optional = {}
+    out.optional = {}
     if values is not None:
         nrequired = -len(values)
-        keys = varnames[nrequired:]
-        optional = dict(zip(keys, values))
+        keys = out.parameters[nrequired:]
+        out.optional = dict(zip(keys, values))
 
-    required = varnames[:nrequired]
+    # required
+    out.required = out.parameters[:nrequired]
 
-    return varnames, required, optional
-
-
-def resolve_dependencies(function, available):
-    """Given a function and a dict of available deps, return a deps object.
-
-    :param function: a function object (not just a function name)
-    :param available: a :py:class:`dict` that
-    :returns: a :py:class:`namedtuple`, described below
-
-    The return value of this function is a :py:class:`namedtuple` with these attributes:
-
-        a - a tuple of argument values
-        kw - a dictionary of keyword arguments
-        names - a tuple of the names of all arguments (in order)
-        required - a tuple of names of required arguments (in order)
-        optional - a dictionary of names of optional arguments with their
-                     default values
-
-    """
-    deps = namedtuple('deps', 'a kw names required optional')
-    deps.a = tuple()
-    deps.kw = {}
-    deps.names, deps.required, deps.optional = parse_signature(function)
-
-    missing = object()
-    for name in deps.names:
-        value = missing  # don't use .get, to avoid bugs around None
-        if name in available:
-            value = available[name]
-        elif name in deps.optional:
-            value = deps.optional[name]
-        if value is not missing:
-            deps.a += (value,)
-            deps.kw[name] = value
-    return deps
+    return out
 
 
 if __name__ == '__main__':
