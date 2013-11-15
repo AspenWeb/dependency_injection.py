@@ -40,7 +40,24 @@ else:
 
 
 def parse_signature(function):
-    """Given a function, return a tuple of required args and dict of optional args.
+    """Given a function, return a three-tuple representing the function signature.
+
+    :param function: a function object (not just a function name)
+    :returns: a three-tuple: first, a tuple of all parameters in order; second,
+        a tuple of required parameters in order; third, and a dict of optional
+        parameters mapped to their defaults
+
+    For example, if you have this function:
+
+    >>> def foo(bar, baz=1):
+    ...     pass
+    ...
+
+    Then :py:func:`~dependency_injection.parse_signature` will return:
+
+    >>> parse_signature(foo)
+    (('bar', 'baz'), ('bar',), {'baz': 1})
+
     """
     code = _get_code(function)
     varnames = code.co_varnames[:code.co_argcount]
@@ -87,3 +104,8 @@ def resolve_dependencies(function, available):
             deps.a += (value,)
             deps.kw[name] = value
     return deps
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

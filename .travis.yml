@@ -7,7 +7,7 @@ python:
 install:
   - pip install --use-mirrors pytest ./
 script: 
-  - py.test tests.py 
+  - ./runtests.sh
 notifications:
   email: false
   irc: 
