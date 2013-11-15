@@ -44,35 +44,35 @@ def test_resolve_dependencies_resolves_dependencies():
     assert deps.signature.parameters ==('foo',)
     assert deps.signature.required == ('foo',)
     assert deps.signature.optional == {}
-    assert deps.a == (1,)
-    assert deps.kw == {'foo': 1}
+    assert deps.as_args == (1,)
+    assert deps.as_kwargs == {'foo': 1}
 
 def test_resolve_dependencies_resolves_two_dependencies():
     def func(foo, bar): pass
     deps = resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert deps.a == (1, True)
-    assert deps.kw == {'foo': 1, 'bar': True}
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
 
 def test_resolve_dependencies_resolves_kwarg():
     def func(foo, bar=False): pass
     deps = resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert deps.a == (1, True)
-    assert deps.kw == {'foo': 1, 'bar': True}
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
 
 def test_resolve_dependencies_honors_kwarg_default():
     def func(foo, bar=False): pass
     deps = resolve_dependencies(func, {'foo': 1})
-    assert deps.a == (1, False)
-    assert deps.kw == {'foo': 1, 'bar': False}
+    assert deps.as_args == (1, False)
+    assert deps.as_kwargs == {'foo': 1, 'bar': False}
 
 def test_resolve_dependencies_honors_kwarg_default_of_None():
     def func(foo, bar=None): pass
     deps = resolve_dependencies(func, {'foo': 1})
-    assert deps.a == (1, None)
-    assert deps.kw == {'foo': 1, 'bar': None}
+    assert deps.as_args == (1, None)
+    assert deps.as_kwargs == {'foo': 1, 'bar': None}
 
 def test_resolve_dependencies_doesnt_get_hung_up_on_None_though():
     def func(foo, bar=None): pass
     deps = resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert deps.a == (1, True)
-    assert deps.kw == {'foo': 1, 'bar': True}
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}

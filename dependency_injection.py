@@ -1,4 +1,4 @@
-"""This Python library defines helpers for building a dependency injection
+"""This Python library defines a helper for building a dependency injection
 framework.
 
 
@@ -35,8 +35,8 @@ defines.  So if you define a function:
 Then you are advertising to a dependency injection framework that your function
 wants to have ``bar`` and ``baz`` objects passed into it. What ``bar`` and
 ``baz`` resolve to depends on the dependency injection framework. This library
-provides two helpers for building your own dependency injection framework. It
-doesn't provide such a framework itself.
+provides a helper, :py:func:`~resolve_dependencies`, for building your own
+dependency injection framework. It doesn't provide such a framework itself.
 
 .. _Dependency injection: http://en.wikipedia.org/wiki/Dependency_injection
 
@@ -73,30 +73,53 @@ def resolve_dependencies(function, available):
     The return value of this function is a :py:class:`namedtuple` with these
     attributes:
 
-    0. ``a`` - a tuple of argument values
-    1. ``kw`` - a dictionary of keyword arguments
+    0. ``as_args`` - a :py:class:`tuple` of argument values
+    1. ``as_kwargs`` - a :py:class:`dict` of keyword arguments
     2. ``signature`` - a :py:class:`namedtuple` as returned by :py:func:`get_signature`
 
-    The ``a`` and ``kw`` arguments are functionally equivalent. You could call
-    the function using either one and you'd get the same result.
+    The ``as_args`` and ``as_kwargs`` arguments are functionally equivalent.
+    You could call the function using either one and you'd get the same result,
+    and which one you use depends on the needs of the dependency injection
+    framework you're writing, and your personal preference.
+
+    This is the main function you want to use from this library. The idea is
+    that in your dependency injection framework, you call this function to
+    resolve the dependencies for a function, and then call the function. So
+    here's a function:
+
+    >>> def foo(bar, baz):
+    ...     return bar + baz
+
+    And here's the basics of a dependency injection framework:
+
+    >>> def inject_dependencies(func):
+    ...     my_state = {'bar': 1, 'baz': 2, 'bloo': 'blee'}
+    ...     dependencies = resolve_dependencies(func, my_state)
+    ...     return func(*dependencies.as_args)
+    ...
+
+    And here's what it looks like to call it:
+
+    >>> inject_dependencies(foo)
+    3
 
     """
-    dependencies = namedtuple('Dependencies', 'a kw signature')
-    dependencies.a = tuple()
-    dependencies.kw = {}
-    dependencies.signature = get_signature(function)
+    as_args = tuple()
+    as_kwargs = {}
+    signature = get_signature(function)
 
     missing = object()
-    for name in dependencies.signature.parameters:
+    for name in signature.parameters:
         value = missing  # don't use .get, to avoid bugs around None
         if name in available:
             value = available[name]
-        elif name in dependencies.signature.optional:
-            value = dependencies.signature.optional[name]
+        elif name in signature.optional:
+            value = signature.optional[name]
         if value is not missing:
-            dependencies.a += (value,)
-            dependencies.kw[name] = value
-    return dependencies
+            as_args += (value,)
+            as_kwargs[name] = value
+
+    return _Dependencies(as_args, as_kwargs, signature)
 
 
 def get_signature(function):
@@ -104,7 +127,7 @@ def get_signature(function):
         signature.
 
     :param function: a function object (not just a function name)
-    :returns: a three-:py:class:`tuple`
+    :returns: a :py:class:`namedtuple` representing the function signature
 
     This function returns a :py:class:`namedtuple` with these items:
 
@@ -118,31 +141,37 @@ def get_signature(function):
     ...     pass
     ...
 
-    Then :py:func:`~dependency_injection.get_signature` will return:
+    Then :py:func:`get_signature` will return:
 
     >>> get_signature(foo)
-    (('bar', 'baz'), ('bar',), {'baz': 1})
+    Signature(parameters=('bar', 'baz'), required=('bar',), optional={'baz': 1})
+
+    This function is a helper for :py:func:`resolve_dependencies`.
 
     """
-    out = namedtuple('Signature', 'parameters required optional')
 
     # parameters
     code = _get_code(function)
-    out.parameters = code.co_varnames[:code.co_argcount]
+    parameters = code.co_varnames[:code.co_argcount]
 
     # optional
-    nrequired = len(out.parameters)
+    nrequired = len(parameters)
     values = _get_defaults(function)
-    out.optional = {}
+    optional = {}
     if values is not None:
         nrequired = -len(values)
-        keys = out.parameters[nrequired:]
-        out.optional = dict(zip(keys, values))
+        keys = parameters[nrequired:]
+        optional = dict(zip(keys, values))
 
     # required
-    out.required = out.parameters[:nrequired]
+    required = parameters[:nrequired]
 
-    return out
+    return _Signature(parameters, required, optional)
+
+
+# Named with leading underscore to suppress documentation.
+_Dependencies = namedtuple('Dependencies', 'as_args as_kwargs signature')
+_Signature = namedtuple('Signature', 'parameters required optional')
 
 
 if __name__ == '__main__':
