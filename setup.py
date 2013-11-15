@@ -8,7 +8,7 @@ setup( name='dependency_injection'
      , author_email='support@gittip.com'
      , description="dependency_injection helpers"
      , url='https://dependency-injection-py.readthedocs.org'
-     , version='0.0.0-dev'
+     , version='1.0.0rc1'
      , py_modules=['dependency_injection']
      , classifiers=[ 'Development Status :: 5 - Production/Stable'
                    , 'Intended Audience :: Developers'
