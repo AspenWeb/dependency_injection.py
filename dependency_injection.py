@@ -33,10 +33,11 @@ defines.  So if you define a function:
 
 
 Then you are advertising to a dependency injection framework that your function
-wants to have ``bar`` and ``baz`` objects passed into it. What ``bar`` and
+wants to have the ``bar`` and ``baz`` objects passed into it. What ``bar`` and
 ``baz`` resolve to depends on the dependency injection framework. This library
 provides a helper, :py:func:`~resolve_dependencies`, for building your own
-dependency injection framework. It doesn't provide such a framework itself.
+dependency injection framework. It doesn't provide such a framework itself,
+because that would take away all the fun.
 
 .. _Dependency injection: http://en.wikipedia.org/wiki/Dependency_injection
 
@@ -63,12 +64,12 @@ else:
 
 
 def resolve_dependencies(function, available):
-    """Given a function object and a :py:class:`dict` of available dependencies, return a
+    """Given a function object and a mapping of available dependencies, return a
         :py:class:`namedtuple` that has arguments to suit the function's parameters.
 
     :param function: a function object (not just a function name)
     :param available: a :py:class:`dict` mapping arbitrary names to objects
-    :returns: a :py:class:`namedtuple`, the arguments to use in calling the function
+    :returns: a :py:class:`namedtuple` representing the arguments to use in calling the function
 
     The return value of this function is a :py:class:`namedtuple` with these
     attributes:
