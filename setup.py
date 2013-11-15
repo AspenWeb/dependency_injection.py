@@ -5,6 +5,7 @@ from setuptools import setup
 
 setup( name='dependency_injection'
      , author='Gittip, LLC'
+     , author_email='support@gittip.com'
      , description="dependency_injection helpers"
      , url='https://dependency-injection-py.readthedocs.org'
      , version='0.0.0-dev'
