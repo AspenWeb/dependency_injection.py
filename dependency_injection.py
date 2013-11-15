@@ -24,20 +24,29 @@ API
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import sys
 from collections import namedtuple
 
 
 __version__ = '0.0.0-dev'
 
 
+if sys.version_info >= (3, 0, 0):
+    _get_code = lambda f: f.__code__
+    _get_defaults = lambda f: f.__defaults__
+else:
+    _get_code = lambda f: f.func_code
+    _get_defaults = lambda f: f.func_defaults
+
+
 def parse_signature(function):
     """Given a function, return a tuple of required args and dict of optional args.
     """
-    code = function.func_code
+    code = _get_code(function)
     varnames = code.co_varnames[:code.co_argcount]
 
     nrequired = len(varnames)
-    values = function.func_defaults
+    values = _get_defaults(function)
     optional = {}
     if values is not None:
         nrequired = -len(values)
