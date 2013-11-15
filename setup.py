@@ -8,7 +8,7 @@ setup( name='dependency_injection'
      , description="dependency_injection helpers"
      , url='https://dependency-injection-py.readthedocs.org'
      , version='0.0.0-dev'
-     , modules=['dependency_injection.py']
+     , py_modules=['dependency_injection']
      , classifiers=[
          'Development Status :: 5 - Production/Stable',
          'Intended Audience :: Developers',
