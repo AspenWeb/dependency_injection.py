@@ -42,8 +42,8 @@ because that would take away all the fun.
 .. _Dependency injection: http://en.wikipedia.org/wiki/Dependency_injection
 
 
-Library API
------------
+API Reference
+-------------
 
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
