@@ -52,7 +52,7 @@ import sys
 from collections import namedtuple
 
 
-__version__ = '1.0.0rc1-dev'
+__version__ = '1.0.0'
 
 
 if sys.version_info >= (3, 0, 0):
