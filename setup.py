@@ -12,7 +12,7 @@ setup( name='dependency_injection'
      , py_modules=['dependency_injection']
      , classifiers=[ 'Development Status :: 5 - Production/Stable'
                    , 'Intended Audience :: Developers'
-                   , 'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication'
+                   , 'License :: OSI Approved :: MIT License'
                    , 'Operating System :: OS Independent'
                    , 'Programming Language :: Python :: 2'
                    , 'Programming Language :: Python :: 2.6'
