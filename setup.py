@@ -8,7 +8,7 @@ setup( name='dependency_injection'
      , author_email='support@gittip.com'
      , description="This library defines a helper for building a dependency injection framework."
      , url='https://dependency-injection-py.readthedocs.org'
-     , version='1.0.0'
+     , version='1.0.0-dev'
      , py_modules=['dependency_injection']
      , classifiers=[ 'Development Status :: 5 - Production/Stable'
                    , 'Intended Audience :: Developers'
