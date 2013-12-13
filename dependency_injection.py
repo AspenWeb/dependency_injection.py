@@ -12,12 +12,11 @@ Installation
 We `test <https://travis-ci.org/gittip/dependency_injection.py>`_ against
 Python 2.6, 2.7, 3.2, and 3.3.
 
-:py:mod:`dependency_injection` is in the `public domain`_.
+:py:mod:`dependency_injection` is MIT-licensed.
 
 
 .. _GitHub: https://github.com/gittip/dependency_injection.py
 .. _PyPI: https://pypi.python.org/pypi/dependency_injection
-.. _public domain: http://creativecommons.org/publicdomain/zero/1.0/
 
 
 What is Dependency Injection?
