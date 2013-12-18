@@ -76,3 +76,42 @@ def test_resolve_dependencies_doesnt_get_hung_up_on_None_though():
     deps = resolve_dependencies(func, {'foo': 1, 'bar': True})
     assert deps.as_args == (1, True)
     assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+
+# Non-Function Callables
+# ======================
+# https://github.com/gittip/dependency_injection.py/issues/2
+
+def test_resolve_dependencies_can_work_with_a_class():
+    class Foo(object):
+        def __init__(bar=None):
+            pass
+    deps = resolve_dependencies(Foo, {'foo': 1, 'bar': True})
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+def test_resolve_dependencies_can_work_with_an_unbound_method():
+    class Foo(object):
+        def method(bar=None):
+            pass
+    deps = resolve_dependencies(Foo.method, {'foo': 1, 'bar': True})
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+def test_resolve_dependencies_can_work_with_a_bound_method():
+    class Foo(object):
+        def method(bar=None):
+            pass
+    foo = Foo()
+    deps = resolve_dependencies(foo.method, {'foo': 1, 'bar': True})
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+def test_resolve_dependencies_can_work_with___call__():
+    class Foo(object):
+        def __call__(bar=None):
+            pass
+    foo = Foo()
+    deps = resolve_dependencies(foo, {'foo': 1, 'bar': True})
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
