@@ -1,4 +1,5 @@
-from dependency_injection import get_signature, resolve_dependencies
+from pytest import raises
+from dependency_injection import get_signature, resolve_dependencies, CantUseThis
 
 
 # get_signature
@@ -76,3 +77,69 @@ def test_resolve_dependencies_doesnt_get_hung_up_on_None_though():
     deps = resolve_dependencies(func, {'foo': 1, 'bar': True})
     assert deps.as_args == (1, True)
     assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+
+# Non-Function Callables
+# ======================
+# https://github.com/gittip/dependency_injection.py/issues/2
+
+def check_callable(cllbl):
+    deps = resolve_dependencies(cllbl, {'foo': 1, 'bar': True})
+    assert deps.as_args == (1, True)
+    assert deps.as_kwargs == {'foo': 1, 'bar': True}
+
+def test_resolve_dependencies_can_work_with_oldstyle___new__():
+    class Foo():
+        def __new__(cls, foo, bar=None):
+            pass
+    check_callable(Foo)
+
+def test_resolve_dependencies_can_work_with_newstyle___new__():
+    class Foo(object):
+        def __new__(cls, foo, bar=None):
+            pass
+    check_callable(Foo)
+
+def test_resolve_dependencies_can_work_with_oldstyle___init__():
+    class Foo():
+        def __init__(self, foo, bar=None):
+            pass
+    check_callable(Foo)
+
+def test_resolve_dependencies_can_work_with_newstyle___init__():
+    class Foo(object):
+        def __init__(self, foo, bar=None):
+            pass
+    check_callable(Foo)
+
+def test_resolve_dependencies_cant_work_with_oldstyle_class_without___new___or___init__():
+    class Foo():
+        pass
+    value = raises(CantUseThis, resolve_dependencies, Foo, {}).value
+    class_str = str(Foo)  # Varies slightly between Python 2 and 3
+    assert str(value) == "Sorry, we can't get a signature for {0}.".format(class_str)
+
+def test_resolve_dependencies_cant_work_with_newstyle_class_without___new___or___init__():
+    class Foo(object):
+        pass
+    value = raises(CantUseThis, resolve_dependencies, Foo, {}).value
+    class_str = str(Foo)  # Varies slightly between Python 2 and 3
+    assert str(value) == "Sorry, we can't get a signature for {0}.".format(class_str)
+
+def test_resolve_dependencies_can_work_with_an_unbound_method():
+    class Foo(object):
+        def method(self, foo, bar=None):
+            pass
+    check_callable(Foo.method)
+
+def test_resolve_dependencies_can_work_with_a_bound_method():
+    class Foo(object):
+        def method(self, foo, bar=None):
+            pass
+    check_callable(Foo().method)
+
+def test_resolve_dependencies_can_work_with___call__():
+    class Foo(object):
+        def __call__(self, foo, bar=None):
+            pass
+    check_callable(Foo())

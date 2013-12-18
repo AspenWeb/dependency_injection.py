@@ -47,17 +47,30 @@ API Reference
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import sys
 from collections import namedtuple
 
 
 __version__ = '1.0.1-dev'
+
+CLASSY_TYPES = (type(object),)
+if sys.version_info < (3, 0, 0):
+    class OldStyleClass():
+        pass
+    CLASSY_TYPES += (type(OldStyleClass),)
+    del OldStyleClass
+
+
+class CantUseThis(Exception):
+    def __str__(self):
+        return "Sorry, we can't get a signature for {0}.".format(*self.args)
 
 
 def resolve_dependencies(function, available):
     """Given a function object and a mapping of available dependencies, return a
         :py:class:`namedtuple` that has arguments to suit the function's parameters.
 
-    :param function: a function object (not just a function name)
+    :param function: a function object or other callable
     :param available: a :py:class:`dict` mapping arbitrary names to objects
     :returns: a :py:class:`namedtuple` representing the arguments to use in calling the function
 
@@ -94,6 +107,9 @@ def resolve_dependencies(function, available):
     >>> inject_dependencies(foo)
     3
 
+    See :py:func:`get_signature` for details on support for non-function
+    callables.
+
     """
     as_args = tuple()
     as_kwargs = {}
@@ -117,10 +133,11 @@ def get_signature(function):
     """Given a function object, return a :py:class:`namedtuple` representing the function
         signature.
 
-    :param function: a function object (not just a function name)
+    :param function: a function object or other callable
     :returns: a :py:class:`namedtuple` representing the function signature
 
-    This function returns a :py:class:`namedtuple` with these items:
+    This function is a helper for :py:func:`resolve_dependencies`. It returns a
+    :py:class:`namedtuple` with these items:
 
     0. ``parameters`` - a :py:class:`tuple` of all parameters, in the order they were defined
     1. ``required`` - a :py:class:`tuple` of required parameters, in the order they were defined
@@ -137,9 +154,40 @@ def get_signature(function):
     >>> get_signature(foo)
     Signature(parameters=('bar', 'baz'), required=('bar',), optional={'baz': 1})
 
-    This function is a helper for :py:func:`resolve_dependencies`.
+    Here are the kinds of callable objects we support (in this resolution order):
+
+        - functions
+        - methods (both bound and unbound)
+        - classes (both newstyle and oldstyle) with a user-defined
+          ``__new__``
+        - classes (both newstyle and oldstyle) with a user-defined
+          ``__init__``
+        - object instances with a ``__call__`` method
+
+    So you can do:
+
+    >>> class Foo(object):
+    ...     def __init__(self, bar, baz=1):
+    ...         pass
+    ...
+    >>> get_signature(Foo)
+    Signature(parameters=('self', 'bar', 'baz'), required=('self', 'bar'), optional={'baz': 1})
 
     """
+
+    # resolve various callables to a function
+    hascode = lambda f: hasattr(f, '__code__')
+    if hascode(function):
+        pass
+    elif type(function) in CLASSY_TYPES:
+        if hasattr(function, '__init__') and hascode(function.__init__):
+            function = function.__init__
+        elif hasattr(function, '__new__') and hascode(function.__new__):
+            function = function.__new__
+        else:
+            raise CantUseThis(function)
+    elif hasattr(function, '__call__'):
+        function = function.__call__
 
     # parameters
     code = function.__code__
