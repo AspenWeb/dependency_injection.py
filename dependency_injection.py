@@ -47,19 +47,10 @@ API Reference
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
 from collections import namedtuple
 
 
 __version__ = '1.0.0-dev'
-
-
-if sys.version_info >= (3, 0, 0):
-    _get_code = lambda f: f.__code__
-    _get_defaults = lambda f: f.__defaults__
-else:
-    _get_code = lambda f: f.func_code
-    _get_defaults = lambda f: f.func_defaults
 
 
 def resolve_dependencies(function, available):
@@ -151,12 +142,12 @@ def get_signature(function):
     """
 
     # parameters
-    code = _get_code(function)
+    code = function.__code__
     parameters = code.co_varnames[:code.co_argcount]
 
     # optional
     nrequired = len(parameters)
-    values = _get_defaults(function)
+    values = function.__defaults__
     optional = {}
     if values is not None:
         nrequired = -len(values)
