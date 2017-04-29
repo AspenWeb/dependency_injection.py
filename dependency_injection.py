@@ -54,8 +54,8 @@ from collections import namedtuple
 __version__ = '1.1.0-dev'
 
 CLASSY_TYPES = (type(object),)
-if sys.version_info < (3, 0, 0):
-    class OldStyleClass():
+if sys.version_info < (3,):
+    class OldStyleClass:
         pass
     CLASSY_TYPES += (type(OldStyleClass),)
     del OldStyleClass
@@ -174,9 +174,10 @@ def get_signature(function):
     Signature(parameters=('self', 'bar', 'baz'), required=('self', 'bar'), optional={'baz': 1})
 
     """
+    def hascode(obj):
+        return hasattr(obj, '__code__')
 
     # resolve various callables to a function
-    hascode = lambda f: hasattr(f, '__code__')
     if hascode(function):
         pass
     elif type(function) in CLASSY_TYPES:
