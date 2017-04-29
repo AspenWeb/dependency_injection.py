@@ -11,3 +11,12 @@ Please refer to the [documentation web page](https://dependency-injection-py.rea
 To run the tests:
 
     tox
+
+If you don't have all the needed Python interpreters installed on your system
+but a Docker client available, here you go:
+
+    ./run-tests-with-docker
+
+You can also pass arguments to `tox`, e.g.:
+ 
+    ./run-tests-with-docker -e py26
