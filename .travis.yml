@@ -1,13 +1,18 @@
+sudo: false
 language: python
+cache: pip
 python:
   - 2.6
   - 2.7
   - 3.2
   - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
 install:
-  - pip install --use-mirrors pytest ./
-script: 
-  - ./runtests.sh
+  - travis_retry pip install tox-travis
+script:
+  - tox
 notifications:
   email: false
 branches:

@@ -9,13 +9,13 @@ Installation
 
     $ pip install dependency_injection
 
-We `test <https://travis-ci.org/gittip/dependency_injection.py>`_ against
-Python 2.6, 2.7, 3.2, and 3.3.
+We `test <https://travis-ci.org/AspenWeb/dependency_injection.py>`_ against
+Python 2.6 throughout to 3.6.
 
 :py:mod:`dependency_injection` is MIT-licensed.
 
 
-.. _GitHub: https://github.com/gittip/dependency_injection.py
+.. _GitHub: https://github.com/AspenWeb/dependency_injection.py
 .. _PyPI: https://pypi.python.org/pypi/dependency_injection
 
 
