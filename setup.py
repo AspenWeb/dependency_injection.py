@@ -2,8 +2,8 @@ from setuptools import setup
 
 
 setup(name='dependency_injection',
-      author='Gittip, LLC',
-      author_email='support@gittip.com',
+      author='Chad Whitacre et al.',
+      author_email='team@aspen.io',
       description='This library defines a helper for building a dependency injection framework.',
       url='https://dependency-injection-py.readthedocs.org/',
       version='1.1.0-dev',
