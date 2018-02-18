@@ -66,8 +66,8 @@ class CantUseThis(Exception):
         return "Sorry, we can't get a signature for {0}.".format(*self.args)
 
 
-def resolve_dependencies(function, available):
-    """Given a function object and a mapping of available dependencies, return a
+def resolve_dependencies(function_or_signature, available):
+    """Given a function or its signature, and a mapping of available dependencies, return a
         :py:class:`namedtuple` that has arguments to suit the function's parameters.
 
     :param function: a function object or other callable
@@ -113,7 +113,10 @@ def resolve_dependencies(function, available):
     """
     as_args = tuple()
     as_kwargs = {}
-    signature = get_signature(function)
+    if isinstance(function_or_signature, _Signature):
+        signature = function_or_signature
+    else:
+        signature = get_signature(function_or_signature)
 
     missing = object()
     for name in signature.parameters:
