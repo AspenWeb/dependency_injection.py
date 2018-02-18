@@ -158,10 +158,7 @@ def get_signature(function):
 
         - functions
         - methods (both bound and unbound)
-        - classes (both newstyle and oldstyle) with a user-defined
-          ``__new__``
-        - classes (both newstyle and oldstyle) with a user-defined
-          ``__init__``
+        - classes (both newstyle and oldstyle)
         - object instances with a ``__call__`` method
 
     So you can do:
@@ -186,9 +183,11 @@ def get_signature(function):
         elif hasattr(function, '__new__') and hascode(function.__new__):
             function = function.__new__
         else:
-            raise CantUseThis(function)
+            return _Signature((), (), {})
     elif hasattr(function, '__call__'):
         function = function.__call__
+    else:
+        raise CantUseThis(function)
 
     # parameters
     code = function.__code__
