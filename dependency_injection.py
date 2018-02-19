@@ -142,17 +142,22 @@ def get_signature(function):
     0. ``parameters`` - a :py:class:`tuple` of all parameters, in the order they were defined
     1. ``required`` - a :py:class:`tuple` of required parameters, in the order they were defined
     2. ``optional`` - a :py:class:`dict` of optional parameters mapped to their defaults
+    3. ``variadic_p`` - ``True`` if the function has a variadic positional argument
+                        (e.g. ``*args``), ``False`` otherwise
+    4. ``variadic_k`` - ``True`` if the function has a variadic keyword argument
+                        (e.g. ``**kw``), ``False`` otherwise
 
     For example, if you have this function:
 
-    >>> def foo(bar, baz=1):
+    >>> def foo(bar, baz=1, **kw):
     ...     pass
     ...
 
     Then :py:func:`get_signature` will return:
 
-    >>> get_signature(foo)
-    Signature(parameters=('bar', 'baz'), required=('bar',), optional={'baz': 1})
+    >>> get_signature(foo)  # doctest: +NORMALIZE_WHITESPACE
+    Signature(parameters=('bar', 'baz'), required=('bar',), optional={'baz': 1},
+              variadic_p=False, variadic_k=True)
 
     Here are the kinds of callable objects we support (in this resolution order):
 
@@ -167,8 +172,9 @@ def get_signature(function):
     ...     def __init__(self, bar, baz=1):
     ...         pass
     ...
-    >>> get_signature(Foo)
-    Signature(parameters=('self', 'bar', 'baz'), required=('self', 'bar'), optional={'baz': 1})
+    >>> get_signature(Foo)  # doctest: +NORMALIZE_WHITESPACE
+    Signature(parameters=('self', 'bar', 'baz'), required=('self', 'bar'), optional={'baz': 1},
+              variadic_p=False, variadic_k=False)
 
     """
     def hascode(obj):
@@ -183,34 +189,32 @@ def get_signature(function):
         elif hasattr(function, '__new__') and hascode(function.__new__):
             function = function.__new__
         else:
-            return _Signature((), (), {})
+            return _Signature((), (), {}, False, False)
     elif hasattr(function, '__call__'):
         function = function.__call__
     else:
         raise CantUseThis(function)
 
-    # parameters
+    # figure out the arguments
     code = function.__code__
-    parameters = code.co_varnames[:code.co_argcount]
-
-    # optional
-    nrequired = len(parameters)
+    nrequired = npositional = code.co_argcount
+    flags, positional = code.co_flags, code.co_varnames[:npositional]
+    variadic_p = flags & 0x04 == 0x04
+    variadic_k = flags & 0x08 == 0x08
     values = function.__defaults__
     optional = {}
     if values is not None:
         nrequired = -len(values)
-        keys = parameters[nrequired:]
+        keys = positional[nrequired:]
         optional = dict(zip(keys, values))
+    required = positional[:nrequired]
 
-    # required
-    required = parameters[:nrequired]
-
-    return _Signature(parameters, required, optional)
+    return _Signature(positional, required, optional, variadic_p, variadic_k)
 
 
 # Named with leading underscore to suppress documentation.
 _Dependencies = namedtuple('Dependencies', 'as_args as_kwargs signature')
-_Signature = namedtuple('Signature', 'parameters required optional')
+_Signature = namedtuple('Signature', 'parameters required optional variadic_p variadic_k')
 
 
 if __name__ == '__main__':

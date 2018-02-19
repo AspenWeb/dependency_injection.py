@@ -1,4 +1,6 @@
-from pytest import raises
+import sys
+
+from pytest import mark, raises
 from dependency_injection import get_signature, resolve_dependencies, CantUseThis
 
 
@@ -37,6 +39,52 @@ def test_get_signature_doesnt_conflate_objects_defined_inside():
     assert signature.parameters == ('foo', 'bar', 'baz')
     assert signature.required == ('foo', 'bar')
     assert signature.optional == {'baz': 2}
+
+
+def test_get_signature_works_with_variadic_positional_args():
+    def func(foo, *args): pass
+    signature = get_signature(func)
+    assert signature.parameters == ('foo',)
+    assert signature.required == ('foo',)
+    assert signature.optional == {}
+    assert signature.variadic_p is True
+    assert signature.variadic_k is False
+
+
+def test_get_signature_works_with_variadic_keyword_args():
+    def func(foo, bar=2, **kw): pass
+    signature = get_signature(func)
+    assert signature.parameters == ('foo', 'bar')
+    assert signature.required == ('foo',)
+    assert signature.optional == {'bar': 2}
+    assert signature.variadic_p is False
+    assert signature.variadic_k is True
+
+
+def test_get_signature_works_with_only_variadic_args():
+    def func(*foo, **bar): pass
+    signature = get_signature(func)
+    assert signature.parameters == ()
+    assert signature.required == ()
+    assert signature.optional == {}
+    assert signature.variadic_p is True
+    assert signature.variadic_k is True
+
+
+@mark.skipif(sys.version_info < (3,), reason="python 2 does not support this")
+def test_get_signature_works_with_all_kinds_of_args():
+    context = dict(globals())
+    exec('''
+        def func(foo, *args, bar=None, **kw):
+            z = 0
+    '''.replace('\n        ', '\n'), context)
+    func = context['func']
+    signature = get_signature(func)
+    assert signature.parameters == ('foo',)
+    assert signature.required == ('foo',)
+    assert signature.optional == {}
+    assert signature.variadic_p is True
+    assert signature.variadic_k is True
 
 
 # resolve_dependencies
