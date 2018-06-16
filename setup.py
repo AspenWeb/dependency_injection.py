@@ -6,7 +6,7 @@ setup(name='dependency_injection',
       author_email='team@aspen.io',
       description='This library defines a helper for building a dependency injection framework.',
       url='https://dependency-injection-py.readthedocs.org/',
-      version='1.2.0',
+      version='1.2.0-dev',
       py_modules=['dependency_injection'],
       classifiers=[
           'Development Status :: 5 - Production/Stable',
