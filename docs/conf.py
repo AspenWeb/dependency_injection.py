@@ -48,7 +48,7 @@ copyright = u'Gittip, LLC'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = '1.2.0-dev'
+release = '1.2.1'
 # The short X.Y version.
 version = release.split('-', 1)[0]
 

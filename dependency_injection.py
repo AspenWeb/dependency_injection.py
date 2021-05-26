@@ -1,6 +1,10 @@
 """This Python library defines a helper for building a dependency injection
 framework.
 
+.. warning:: This library is obsolete, you should use the standard `inspect.signature() function`_ introduced in Python 3.3 instead.
+
+.. _inspect.signature() function: https://docs.python.org/3/library/inspect.html#introspecting-callables-with-the-signature-object
+
 
 Installation
 ------------
@@ -49,9 +53,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import sys
 from collections import namedtuple
+import warnings
 
 
-__version__ = '1.2.0-dev'
+warnings.warn(DeprecationWarning(
+    "This module is obsolete, you should use the standard `inspect.signature()` "
+    "function introduced in Python 3.3 instead."
+))
+
+
+__version__ = '1.2.1'
 
 CLASSY_TYPES = (type(object),)
 if sys.version_info < (3,):
