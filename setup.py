@@ -4,9 +4,9 @@ from setuptools import setup
 setup(name='dependency_injection',
       author='Chad Whitacre et al.',
       author_email='team@aspen.io',
-      description='This library defines a helper for building a dependency injection framework.',
+      description='This library is obsolete.',
       url='https://dependency-injection-py.readthedocs.org/',
-      version='1.2.0-dev',
+      version='1.2.1',
       py_modules=['dependency_injection'],
       classifiers=[
           'Development Status :: 5 - Production/Stable',
